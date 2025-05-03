@@ -13,11 +13,33 @@ const sistemaSchema = z.object({
 router.post('/', async (req, res) => {
   try {
     const dados = sistemaSchema.parse(req.body);
-    const novoSistema = await prisma.sistema.create({ data: dados });
+    const count = await prisma.sistema.count();
+    const codigo = `SYS-${String(count + 1).padStart(3, '0')}`;
+    const novoSistema = await prisma.sistema.create({ data: { ...dados, codigo } });
     res.status(201).json(novoSistema);
   } catch (err) {
     res.status(400).json({ error: err });
   }
 });
+
+router.post('/', async (req, res) => {
+  try {
+    const dados = sistemaSchema.parse(req.body);
+
+    const count = await prisma.sistema.count();
+    const codigo = `SYS-${String(count + 1).padStart(3, '0')}`;
+
+    const novoSistema = await prisma.sistema.create({
+      data: {
+        ...dados,
+        codigo
+      }
+    });
+    res.status(201).json(novoSistema);
+  } catch (err) {
+    res.status(400).json({ error: err });
+  }
+});
+
 
 export default router;

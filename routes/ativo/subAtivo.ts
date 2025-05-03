@@ -14,7 +14,34 @@ const subativoSchema = z.object({
 router.post('/', async (req, res) => {
   try {
     const dados = subativoSchema.parse(req.body);
-    const novoSubativo = await prisma.subativo.create({ data: dados });
+    const count = await prisma.subativo.count({ where: { id_ativo: dados.id_ativo } });
+    const codigo = `SUB-${dados.id_ativo}-${String(count + 1).padStart(2, '0')}`;
+
+    const novoSubativo = await prisma.subativo.create({
+      data: {
+        ...dados,
+        codigo
+      }
+    });
+    res.status(201).json(novoSubativo);
+  } catch (err) {
+    res.status(400).json({ error: err });
+  }
+});
+
+router.post('/', async (req, res) => {
+  try {
+    const dados = subativoSchema.parse(req.body);
+
+    const count = await prisma.subativo.count({ where: { id_ativo: dados.id_ativo } });
+    const codigo = `SUB-${dados.id_ativo}-${String(count + 1).padStart(2, '0')}`;
+
+    const novoSubativo = await prisma.subativo.create({
+      data: {
+        ...dados,
+        codigo
+      }
+    });
     res.status(201).json(novoSubativo);
   } catch (err) {
     res.status(400).json({ error: err });
