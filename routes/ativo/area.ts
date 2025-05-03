@@ -41,4 +41,54 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.get('/', async (req, res) => {
+  try {
+    const areas = await prisma.area.findMany();
+    res.status(200).json(areas);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar áreas' });
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const area = await prisma.area.findUnique({ where: { id } });
+    if (!area){
+      res.status(404).json({ error: 'Área não encontrada' });
+      return;
+    } 
+    res.status(200).json(area);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar área' });
+  }
+});
+
+router.patch('/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const area = await prisma.area.findUnique({ where: { id } });
+
+    if (!area){
+      res.status(404).json({ error: 'Área não encontrada' });
+      return;
+    } 
+
+    const atualizada = await prisma.area.update({ where: { id }, data: req.body });
+    res.status(200).json(atualizada);
+  } catch (err) {
+    res.status(400).json({ error: err });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.area.delete({ where: { id } });
+    res.status(204).send();
+  } catch (err) {
+    res.status(400).json({ error: 'Erro ao deletar área' });
+  }
+});
+
 export default router;
