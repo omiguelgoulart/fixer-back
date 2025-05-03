@@ -40,4 +40,44 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.get('/', async (req, res) => {
+  try {
+    const ativos = await prisma.ativo.findMany();
+    res.status(200).json(ativos);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar ativos' });
+  }
+});
+
+router.patch('/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const dadosParciais = req.body;
+    const ativo = await prisma.ativo.findUnique({ where: { id } });
+    if (!ativo) {
+      res.status(404).json({ error: 'Ativo não encontrado' });
+      return;
+    }
+
+    const atualizado = await prisma.ativo.update({
+      where: { id },
+      data: dadosParciais
+    });
+
+    res.status(200).json(atualizado);
+  } catch (err) {
+    res.status(400).json({ error: err });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.ativo.delete({ where: { id } });
+    res.status(204).send();
+  } catch (err) {
+    res.status(400).json({ error: 'Erro ao deletar ativo' });
+  }
+});
 export default router;
