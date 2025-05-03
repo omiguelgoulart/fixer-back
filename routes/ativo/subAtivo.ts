@@ -48,4 +48,55 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.get('/', async (req, res) => {
+  try {
+    const lista = await prisma.subativo.findMany();
+    res.status(200).json(lista);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar subativos' });
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const item = await prisma.subativo.findUnique({ where: { id } });
+
+    if (!item){
+      res.status(404).json({ error: 'Subativo não encontrado' });
+      return;
+    } 
+    res.status(200).json(item);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar subativo' });
+  }
+});
+
+router.patch('/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const item = await prisma.subativo.findUnique({ where: { id } });
+
+    if (!item){
+      res.status(404).json({ error: 'Subativo não encontrado' });
+      return;
+    } 
+    const atualizado = await prisma.subativo.update({ where: { id }, data: req.body });
+    res.status(200).json(atualizado);
+  } catch (err) {
+    res.status(400).json({ error: err });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.subativo.delete({ where: { id } });
+    res.status(204).send();
+  } catch (err) {
+    res.status(400).json({ error: 'Erro ao deletar subativo' });
+  }
+});
+
+
 export default router;
