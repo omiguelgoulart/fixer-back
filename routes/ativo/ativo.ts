@@ -49,6 +49,23 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const ativo = await prisma.ativo.findUnique({
+      where: { id },
+      include: { subativos: true } // Inclui os sub-ativos relacionados
+    });
+    if (!ativo) {
+      res.status(404).json({ error: 'Ativo não encontrado' });
+      return;
+    }
+    res.status(200).json(ativo);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar ativo' });
+  }
+});
+
 router.patch('/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
