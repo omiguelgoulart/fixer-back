@@ -2,8 +2,6 @@ import { PrismaClient } from "@prisma/client"
 import { Router } from "express"
 import { z } from 'zod'
 import { gerarPrefixo } from "../../utils/geraPrefixo"
-import cloudinary from "../../lib/cloudinary";
-import { upload } from "../../middlewares/upload";
 
 const prisma = new PrismaClient()
 const router = Router()
@@ -18,37 +16,7 @@ const ativoSchema = z.object({
   data_aquisicao: z.coerce.date().optional(),
   localizacao_interna: z.string().optional(),
   criticidade: z.enum(['ALTA', 'MEDIA', 'BAIXA'], { required_error: 'Criticidade é obrigatória' }),
-  imagem: z.string().optional()
-});
-
-router.post("/fotos", upload.single("imagem"), async (req, res) => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ error: "Imagem é obrigatória." });
-      return;
-    }
-
-    const result = await cloudinary.uploader.upload(req.file.path);
-    const { descricao = "", ativoId } = req.body;
-
-    if (!ativoId) {
-      res.status(400).json({ error: "ativoId é obrigatório." });
-      return;
-    }
-
-    const novaFoto = await prisma.foto.create({
-      data: {
-        url: result.secure_url,
-        descricao,
-        ativoId: Number(ativoId),
-      },
-    });
-
-    res.status(201).json(novaFoto);
-  } catch (err) {
-    console.error("Erro no upload da imagem:", err);
-    res.status(500).json({ error: "Erro ao salvar foto." });
-  }
+  foto: z.string().optional()
 });
 
 
@@ -69,7 +37,8 @@ router.post("/",  async (req, res) => {
       situacao = "ATIVO",
       data_aquisicao,
       localizacao_interna,
-      criticidade
+      criticidade,
+      foto
     } = parsed.data;
 
     const prefixo = gerarPrefixo(tipo_ativo);
@@ -88,7 +57,8 @@ router.post("/",  async (req, res) => {
         data_aquisicao,
         localizacao_interna,
         criticidade,
-        codigo
+        codigo,
+        foto
       }
     });
 
@@ -156,6 +126,7 @@ router.patch('/:id', async (req, res) => {
       data_aquisicao,
       localizacao_interna,
       criticidade,
+      foto,
     
     } = parsed.data;
 
@@ -181,6 +152,7 @@ router.patch('/:id', async (req, res) => {
         localizacao_interna,
         criticidade,
         codigo,
+        foto,
       },
     });
 

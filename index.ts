@@ -7,6 +7,7 @@ import ativoRouter from './routes/ativo/ativo';
 import subativoRouter from './routes/ativo/subAtivo';
 import usuariosRouter from './routes/usuario';
 import loginRouter from './routes/login';
+import fotosRouter from './routes/ativo/fotos';
 
 
 const app = express()
@@ -23,6 +24,7 @@ app.use('/ativo', ativoRouter);
 app.use('/subativo', subativoRouter);
 app.use('/usuario', usuariosRouter);
 app.use('/login', loginRouter);
+app.use('/fotos', fotosRouter);
 
 app.get('/', (req, res) => {
   res.send('API: Fixer')

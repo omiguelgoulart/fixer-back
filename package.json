@@ -18,6 +18,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "uuid": "^11.1.0",
     "zod": "^3.24.3",
     "zustand": "^5.0.3"
