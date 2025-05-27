@@ -11,6 +11,7 @@ const prisma = new PrismaClient()
 const ordemServicoSchema = z.object({
   titulo: z.string(),
   status: z.enum(["EM_ABERTO", "EM_ANDAMENTO", "CONCLUIDA"]),
+  codigo: z.string().optional(), // O código será gerado automaticamente
   prioridade: z.enum(["ALTA", "MEDIA", "BAIXA"]),
   responsavelId: z.number(),
   usuarioId: z.number(),
@@ -35,26 +36,28 @@ const ordemServicoSchema = z.object({
   }
 });
 
-router.get("/:id", async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const ordemServico = await prisma.ordemServico.findUnique({
-      where: { id },
-      include: {
-        ativo: true,
-        responsavel: true,
-        usuario: true,
-      },
-    });
-    if (!ordemServico) {
-      res.status(404).json({ error: "Ordem de serviço não encontrada." });
-      return;
+router.get("/:id/os", async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const ordemServico = await prisma.ordemServico.findUnique({
+            where: { id },
+            include: {
+                ativo: true,
+                responsavel: true,
+                usuario: true,
+                tarefas: true,
+                insumos: true,
+            },
+        });
+        if (!ordemServico) {
+            res.status(404).json({ error: "Ordem de serviço não encontrada." });
+            return;
+        }
+        res.status(200).json(ordemServico);
+    } catch (err) {
+        console.error("Erro ao buscar ordem de serviço:", err);
+        res.status(500).json({ error: "Erro ao buscar ordem de serviço." });
     }
-    res.status(200).json(ordemServico);
-  } catch (err) {
-    console.error("Erro ao buscar ordem de serviço:", err);
-    res.status(500).json({ error: "Erro ao buscar ordem de serviço." });
-  }
 });
 
 router.post("/", async (req, res) => {
@@ -76,12 +79,17 @@ router.post("/", async (req, res) => {
       usuarioId
     } = parsed.data;
 
+    const count = await prisma.ordemServico.count();
+    const prefixo = `OS${String(count + 1).padStart(3, '0')}`;
+    const codigo = `${prefixo}-${new Date().getFullYear()}`;
+
     // Defina dataInicioPlanejada conforme sua lógica de negócio, aqui usando a data atual como exemplo
     const dataInicioPlanejada = new Date();
 
     const ordemServico = await prisma.ordemServico.create({
       data: {
         titulo,
+        codigo,
         status,
         prioridade,
         responsavelId,

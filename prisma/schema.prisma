@@ -135,6 +135,7 @@ model Usuario {
 
 model OrdemServico {
   id                  Int             @id @default(autoincrement())
+  codigo              String?          @unique
   titulo              String
   status              StatusOrdem
   prioridade          PrioridadeOrdem
@@ -184,7 +185,7 @@ model Tarefa {
 
 model Insumo {
   id              Int           @id @default(autoincrement())
-  nome            String
+  nome            String?        @unique
   codigo          String
   quantidade      Int
   ordemServicoId  Int

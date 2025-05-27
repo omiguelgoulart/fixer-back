@@ -7,7 +7,6 @@ const prisma = new PrismaClient()
 
 const insumoSchema = z.object({
     nome: z.string().min(1, 'Nome do insumo é obrigatório'),
-    codigo: z.string().min(1, 'Código do insumo é obrigatório'),
     quantidade: z.number({ required_error: 'Quantidade é obrigatória' }).int(),
     ordemServicoId: z.number({ required_error: 'ID da ordem de serviço é obrigatório' }).int()
 })
@@ -53,7 +52,12 @@ router.post("/", async (req, res) => {
       res.status(400).json({ error: parsed.error.flatten() });
       return;
     }
-    const { nome, codigo, quantidade, ordemServicoId } = parsed.data;
+    const { nome, quantidade, ordemServicoId } = parsed.data;
+
+    const count = await prisma.insumo.count();
+    const prefixo = `IS${String(count + 1).padStart(3, '0')}`;
+    const codigo = `${prefixo}-${new Date().getFullYear()}`;
+
 
     const insumo = await prisma.insumo.create({
       data: {
