@@ -62,7 +62,7 @@ model Ativo {
   fotos               Foto[]        // 👈 relação 1:N
   subativos           Subativo[]
   manutencoes         Manutencao[]
-  falhas              Falha[]
+  ordensServico      OrdemServico[]
 
   @@map("ativos")
 }
@@ -98,16 +98,6 @@ enum Criticidade {
   BAIXA
 }
 
-model Falha {
-  id              Int         @id @default(autoincrement())
-  descricao       String
-  data_ocorrencia DateTime
-  criticidade     Criticidade
-  id_ativo        Int
-  ativo           Ativo       @relation(fields: [id_ativo], references: [id], onDelete: Cascade)
-
-  @@map("falhas")
-}
 
 model Subativo {
   id       Int    @id @default(autoincrement())
@@ -120,33 +110,99 @@ model Subativo {
   @@map("subativos")
 }
 
-model Manutencao {
-  id          Int            @id @default(autoincrement())
-  tipo        TipoManutencao
-  data_inicio DateTime
-  data_fim    DateTime
-  descricao   String
-  id_ativo    Int
-  ativo       Ativo          @relation(fields: [id_ativo], references: [id], onDelete: Cascade)
-
-  @@map("manutencoes")
-}
-
+// Enum para tipos de manutenção
 enum TipoManutencao {
   CORRETIVA
   PREVENTIVA
   PREDITIVA
 }
 
+// Enum para tipos de usuário
 model Usuario {
-  id        Int     @id @default(autoincrement())
-  nome      String
-  email     String  @unique
-  senha     String
-  ativo     Boolean @default(true)
-  tipo      TipoUsuario
+  id                  Int             @id @default(autoincrement())
+  nome                String
+  email               String          @unique
+  senha               String
+  ativo               Boolean         @default(true)
+  tipo                TipoUsuario
+  ordensResponsavel   OrdemServico[]  @relation("ResponsavelNaOrdemServico")
+  ordensServico       OrdemServico[]  @relation("UsuarioNaOrdemServico")
+  manutencoesUsuario  Manutencao[]    @relation("UsuarioNaManutencaoDireta")
 
   @@map("usuarios")
+}
+
+
+model OrdemServico {
+  id                  Int             @id @default(autoincrement())
+  titulo              String
+  status              StatusOrdem
+  prioridade          PrioridadeOrdem
+  responsavelId       Int
+  responsavel         Usuario         @relation("ResponsavelNaOrdemServico", fields: [responsavelId], references: [id])
+  ativoId             Int
+  ativo               Ativo           @relation(fields: [ativoId], references: [id])
+  dataInicioPlanejada DateTime        @default(now())
+  dataVencimento      DateTime
+  tipoManutencao      TipoManutencao
+  usuarioId           Int
+  usuario             Usuario         @relation("UsuarioNaOrdemServico", fields: [usuarioId], references: [id])
+  tarefas             Tarefa[]
+  insumos             Insumo[]
+  manutencao          Manutencao?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@map("ordens_servico")
+}
+
+model Manutencao {
+  id              Int            @id @default(autoincrement())
+  tipo            TipoManutencao
+  data_inicio     DateTime
+  data_fim        DateTime
+  descricao       String
+  id_ativo        Int
+  ativo           Ativo          @relation(fields: [id_ativo], references: [id], onDelete: Cascade)
+  ordemServicoId  Int            @unique
+  ordemServico    OrdemServico   @relation(fields: [ordemServicoId], references: [id])
+  usuarioId       Int
+  usuario         Usuario        @relation("UsuarioNaManutencaoDireta", fields: [usuarioId], references: [id])
+
+  @@map("manutencoes")
+}
+
+model Tarefa {
+  id              Int           @id @default(autoincrement())
+  descricao       String
+  concluida       Boolean       @default(false)
+  ordemServicoId  Int
+  ordemServico    OrdemServico  @relation(fields: [ordemServicoId], references: [id])
+
+  @@map("tarefas")
+}
+
+model Insumo {
+  id              Int           @id @default(autoincrement())
+  nome            String
+  codigo          String
+  quantidade      Int
+  ordemServicoId  Int
+  ordemServico    OrdemServico  @relation(fields: [ordemServicoId], references: [id])
+
+  @@map("insumos")
+}
+
+enum StatusOrdem {
+  EM_ABERTO
+  EM_ANDAMENTO
+  CONCLUIDA
+}
+
+enum PrioridadeOrdem {
+  ALTA
+  MEDIA
+  BAIXA
 }
 
 enum TipoUsuario {
