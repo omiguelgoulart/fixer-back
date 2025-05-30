@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
-import bcrypt from "bcrypt";
+import bcrypt from 'bcryptjs'
 import { z } from "zod";
 import { validaSenha } from "../utils/validaSenha";
 
