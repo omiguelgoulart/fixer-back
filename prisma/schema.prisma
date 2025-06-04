@@ -119,15 +119,17 @@ enum TipoManutencao {
 
 // Enum para tipos de usuário
 model Usuario {
-  id                  Int             @id @default(autoincrement())
-  nome                String
-  email               String          @unique
-  senha               String
-  ativo               Boolean         @default(true)
-  tipo                TipoUsuario
-  ordensResponsavel   OrdemServico[]  @relation("ResponsavelNaOrdemServico")
-  ordensServico       OrdemServico[]  @relation("UsuarioNaOrdemServico")
-  manutencoesUsuario  Manutencao[]    @relation("UsuarioNaManutencaoDireta")
+  id                          Int             @id @default(autoincrement())
+  nome                        String
+  email                       String          @unique
+  senha                       String
+  ativo                       Boolean         @default(true)
+  tipo                        TipoUsuario
+  ordensResponsavel           OrdemServico[]  @relation("ResponsavelNaOrdemServico")
+  ordensServico               OrdemServico[]  @relation("UsuarioNaOrdemServico")
+  manutencoesUsuario          Manutencao[]    @relation("UsuarioNaManutencaoDireta")
+  codRecuperaSenha            String?         @unique
+  codRecuperaSenhaExpiracao   DateTime?
 
   @@map("usuarios")
 }
