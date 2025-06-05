@@ -11,6 +11,7 @@ import fotosRouter from './routes/ativo/fotos';
 import tarefaRouter from './routes/planejamento/tarefa';
 import ordemServicoRouter from './routes/planejamento/ordemServico';
 import IsumoRouter from './routes/planejamento/insumo';
+import authRouter from './routes/auth';
 
 
 const app = express()
@@ -27,6 +28,7 @@ app.use('/ativo', ativoRouter);
 app.use('/subativo', subativoRouter);
 app.use('/usuario', usuariosRouter);
 app.use('/login', loginRouter);
+app.use('/auth', authRouter);
 app.use('/fotos', fotosRouter);
 
 app.use('/tarefa', tarefaRouter);
