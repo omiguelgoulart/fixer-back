@@ -59,4 +59,17 @@ router.post("/", async (req, res) => {
   }
 });
 
+// GET usuário por cargo, sendo Tecnico
+router.get("/tecnico", async (req, res) => {
+  try {
+    const usuarios = await prisma.usuario.findMany({
+      where: { tipo: "TECNICO" },
+    });
+    res.status(200).json(usuarios);
+  } catch (error) {
+    console.error("Erro ao listar usuários técnicos:", error);
+    res.status(500).json({ erro: "Erro interno ao buscar usuários técnicos" });
+  }
+});
+
 export default router;
