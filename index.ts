@@ -7,7 +7,6 @@ import ativoRouter from './routes/ativo/ativo';
 import subativoRouter from './routes/ativo/subAtivo';
 import usuariosRouter from './routes/usuario';
 import loginRouter from './routes/login';
-import fotosRouter from './routes/ativo/fotos';
 import tarefaRouter from './routes/planejamento/tarefa';
 import ordemServicoRouter from './routes/planejamento/ordemServico';
 import IsumoRouter from './routes/planejamento/insumo';
@@ -29,7 +28,6 @@ app.use('/subativo', subativoRouter);
 app.use('/usuario', usuariosRouter);
 app.use('/login', loginRouter);
 app.use('/auth', authRouter);
-app.use('/fotos', fotosRouter);
 
 app.use('/tarefa', tarefaRouter);
 app.use('/ordemServico', ordemServicoRouter);

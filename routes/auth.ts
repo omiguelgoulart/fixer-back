@@ -86,11 +86,12 @@ router.post("/esqueci-senha", async (req, res) => {
     }
     
     // Resposta genérica para evitar enumeração de usuários
-    return res.status(200).json({ message: "Se um usuário com este email existir em nossos registros, um código de redefinição de senha foi enviado." });
-
+    res.status(200).json({ message: "Se um usuário com este email existir em nossos registros, um código de redefinição de senha foi enviado." });
+    return;
   } catch (error) {
     console.error("Erro ao solicitar redefinição de senha:", error);
-    return res.status(500).json({ erro: "Erro interno ao processar sua solicitação." });
+    res.status(500).json({ erro: "Erro interno ao processar sua solicitação." });
+    return;
   }
 });
 
@@ -110,7 +111,8 @@ const recuperarSenhaSchema = z.object({
 router.post("/recuperar-senha", async (req: Request, res: Response) => {
   const validation = recuperarSenhaSchema.safeParse(req.body);
   if (!validation.success) {
-    return res.status(400).json({ erro: "Dados inválidos.", detalhes: validation.error.flatten().fieldErrors });
+    res.status(400).json({ erro: "Dados inválidos.", detalhes: validation.error.flatten().fieldErrors });
+    return;
   }
 
   const { email, codigoRecuperacao, novaSenha } = validation.data;
@@ -118,7 +120,8 @@ router.post("/recuperar-senha", async (req: Request, res: Response) => {
   // Validar a nova senha usando sua função customizada
   const errosNovaSenha = validaSenha(novaSenha); // Sua função de validação de política de senha
   if (errosNovaSenha.length > 0) {
-    return res.status(400).json({ erro: "Nova senha inválida.", detalhes: { novaSenha: errosNovaSenha } });
+    res.status(400).json({ erro: "Nova senha inválida.", detalhes: { novaSenha: errosNovaSenha } });
+    return;
   }
 
   try {
@@ -128,7 +131,8 @@ router.post("/recuperar-senha", async (req: Request, res: Response) => {
 
     // Verifica se o usuário existe, se tem um código e se o código não expirou
     if (!usuario || !usuario.codRecuperaSenha || !usuario.codRecuperaSenhaExpiracao) {
-      return res.status(400).json({ erro: "Solicitação inválida ou código não encontrado. Por favor, tente novamente." });
+      res.status(400).json({ erro: "Solicitação inválida ou código não encontrado. Por favor, tente novamente." });
+      return;
     }
 
     if (new Date() > usuario.codRecuperaSenhaExpiracao) {
@@ -137,12 +141,14 @@ router.post("/recuperar-senha", async (req: Request, res: Response) => {
           where: {id: usuario.id},
           data: {codRecuperaSenha: null, codRecuperaSenhaExpiracao: null}
       });
-      return res.status(400).json({ erro: "Código de recuperação expirado. Por favor, solicite um novo." });
+      res.status(400).json({ erro: "Código de recuperação expirado. Por favor, solicite um novo." });
+      return;
     }
 
     // Compara o código fornecido com o código armazenado (texto plano)
     if (usuario.codRecuperaSenha !== codigoRecuperacao) {
-      return res.status(400).json({ erro: "Código de recuperação inválido." });
+      res.status(400).json({ erro: "Código de recuperação inválido." });
+      return;
     }
 
     // Se o código é válido e não expirou, hasheia a nova senha e atualiza o usuário
@@ -156,11 +162,13 @@ router.post("/recuperar-senha", async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(200).json({ message: "Senha redefinida com sucesso!" });
+    res.status(200).json({ message: "Senha redefinida com sucesso!" });
+    return;
 
   } catch (error) {
     console.error("Erro ao redefinir senha:", error);
-    return res.status(500).json({ erro: "Erro interno ao redefinir sua senha." });
+    res.status(500).json({ erro: "Erro interno ao redefinir sua senha." });
+    return;
   }
 });
 
