@@ -71,5 +71,29 @@ router.get("/tecnico", async (req, res) => {
     res.status(500).json({ erro: "Erro interno ao buscar usuários técnicos" });
   }
 });
+// GET usuário por ID e cargo, sendo tecnico
+router.get("/tecnico/:id/tec", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ erro: "ID inválido" });
+    return;
+  }
+
+  try {
+    const usuario = await prisma.usuario.findUnique({
+      where: { id, tipo: "TECNICO" },
+    });
+
+    if (!usuario) {
+      res.status(404).json({ erro: "Usuário técnico não encontrado" });
+      return;
+    }
+
+    res.status(200).json(usuario);
+  } catch (error) {
+    console.error("Erro ao buscar usuário técnico:", error);
+    res.status(500).json({ erro: "Erro interno ao buscar usuário técnico" });
+  }
+});
 
 export default router;
