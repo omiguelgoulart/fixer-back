@@ -140,7 +140,7 @@ model OrdemServico {
   responsavel         Usuario         @relation("ResponsavelNaOrdemServico", fields: [responsavelId], references: [id])
   ativoId             Int
   ativo               Ativo           @relation(fields: [ativoId], references: [id])
-  dataInicioPlanejada DateTime        @default(now())
+  dataInicioPlanejada DateTime        
   dataVencimento      DateTime
   tipoManutencao      TipoManutencao
   usuarioId           Int
