@@ -17,7 +17,8 @@ const ordemServicoSchema = z.object({
   usuarioId: z.number(),
   ativoId: z.number(),
   tipoManutencao: z.enum(["CORRETIVA", "PREVENTIVA", "PREDITIVA"]),
-  dataVencimento: z.coerce.date()
+  dataVencimento: z.coerce.date(),
+  dataInicioPlanejada: z.coerce.date()
 })
 
  router.get("/", async (req, res) => {
@@ -75,6 +76,7 @@ router.post("/", async (req, res) => {
       responsavelId,
       ativoId,
       dataVencimento,
+      dataInicioPlanejada,
       tipoManutencao,
       usuarioId
     } = parsed.data;
@@ -82,9 +84,6 @@ router.post("/", async (req, res) => {
     const count = await prisma.ordemServico.count();
     const prefixo = `OS${String(count + 1).padStart(3, '0')}`;
     const codigo = `${prefixo}-${new Date().getFullYear()}`;
-
-    // Defina dataInicioPlanejada conforme sua lógica de negócio, aqui usando a data atual como exemplo
-    const dataInicioPlanejada = new Date();
 
     const ordemServico = await prisma.ordemServico.create({
       data: {
