@@ -4,6 +4,7 @@ export function gerarPrefixo(tipo: string): string {
       MECANICO: 'MEC',
       ELETRONICO: 'ELC',
       HIDRAULICO: 'HID',
+      PNEUMATICO: 'PNE',
       OUTRO: 'OUT'
     };
     return mapa[tipo as keyof typeof mapa] || 'OUT';

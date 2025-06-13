@@ -88,7 +88,9 @@ router.patch("/:id", async (req, res) => {
       return;
     }
 
-    const parsed = insumoSchema.safeParse(req.body);
+
+    const partialSchema = insumoSchema.partial();
+    const parsed = partialSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: parsed.error.flatten() });
       return;

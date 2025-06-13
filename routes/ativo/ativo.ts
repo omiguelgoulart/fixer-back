@@ -11,14 +11,13 @@ const ativoSchema = z.object({
   fabricante: z.string().min(1, 'Fabricante é obrigatório'),
   modelo: z.string().min(1, 'Modelo é obrigatório'),
   id_sistema: z.number({ required_error: 'ID do sistema é obrigatório' }).int(),
-  tipo_ativo: z.enum(['MECANICO', 'ELETRICO', 'ELETRONICO', 'HIDRAULICO', 'OUTRO'], { required_error: 'Tipo de ativo é obrigatório' }),
+  tipo_ativo: z.enum(['MECANICO', 'ELETRICO', 'ELETRONICO', 'HIDRAULICO', 'PNEUMATICO', 'OUTRO' ], { required_error: 'Tipo de ativo é obrigatório' }),
   situacao: z.enum(['ATIVO', 'INATIVO', 'MANUTENCAO', 'DESCARTADO']).optional(),
   data_aquisicao: z.coerce.date().optional(),
   localizacao_interna: z.string().optional(),
   criticidade: z.enum(['ALTA', 'MEDIA', 'BAIXA'], { required_error: 'Criticidade é obrigatória' }),
   foto: z.string().optional()
 });
-
 
 router.post("/",  async (req, res) => {
     try {
@@ -110,7 +109,8 @@ router.patch('/:id', async (req, res) => {
     }
 
     // ✅ Valida os dados recebidos
-    const parsed = ativoSchema.safeParse(req.body);
+    const partialSchema = ativoSchema.partial();
+    const parsed = partialSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: parsed.error.flatten() });
       return;
@@ -132,7 +132,7 @@ router.patch('/:id', async (req, res) => {
 
     // ✅ Só gera novo código se o tipo_ativo foi alterado
     let codigo = ativoExistente.codigo;
-    if (tipo_ativo !== ativoExistente.tipo_ativo) {
+    if (tipo_ativo !== undefined && tipo_ativo !== ativoExistente.tipo_ativo) {
       const prefixo = gerarPrefixo(tipo_ativo);
       const count = await prisma.ativo.count({ where: { tipo_ativo } });
       const numeroSequencial = String(count + 1).padStart(4, "0");
@@ -163,7 +163,6 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
-
 router.delete('/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -173,4 +172,5 @@ router.delete('/:id', async (req, res) => {
     res.status(400).json({ error: 'Erro ao deletar ativo' });
   }
 });
+
 export default router;

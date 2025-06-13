@@ -1,15 +1,17 @@
-import { Router } from 'express'
-import { PrismaClient } from '@prisma/client'
-import { z } from 'zod'
+import { Router } from "express";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
-const router = Router()
-const prisma = new PrismaClient()
+const router = Router();
+const prisma = new PrismaClient();
 
 const tarefaSchema = z.object({
-    descricao: z.string().min(1, 'Descrição é obrigatória'),
-    concluida: z.boolean().default(false),
-    ordemServicoId: z.number({ required_error: 'ID da ordem de serviço é obrigatório' }).int(),
-})
+  descricao: z.string().min(1, "Descrição é obrigatória"),
+  concluida: z.boolean().default(false),
+  ordemServicoId: z
+    .number({ required_error: "ID da ordem de serviço é obrigatório" })
+    .int(),
+});
 
 router.get("/", async (req, res) => {
   try {
@@ -77,17 +79,18 @@ router.patch("/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
-      res.status(400).json({ error: 'ID inválido' });
+      res.status(400).json({ error: "ID inválido" });
       return;
     }
 
     const tarefaExistente = await prisma.tarefa.findUnique({ where: { id } });
     if (!tarefaExistente) {
-      res.status(404).json({ error: 'Tarefa não encontrada' });
+      res.status(404).json({ error: "Tarefa não encontrada" });
       return;
     }
 
-    const parsed = tarefaSchema.safeParse(req.body);
+    const partialSchema = tarefaSchema.partial();
+    const parsed = partialSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: parsed.error.flatten() });
       return;
@@ -112,12 +115,12 @@ router.delete("/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
-      res.status(400).json({ error: 'ID inválido' });
+      res.status(400).json({ error: "ID inválido" });
       return;
     }
     const tarefaExistente = await prisma.tarefa.findUnique({ where: { id } });
     if (!tarefaExistente) {
-      res.status(404).json({ error: 'Tarefa não encontrada' });
+      res.status(404).json({ error: "Tarefa não encontrada" });
       return;
     }
     await prisma.tarefa.delete({ where: { id } });

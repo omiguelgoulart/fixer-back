@@ -29,25 +29,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
-  try {
-    const dados = subativoSchema.parse(req.body);
-
-    const count = await prisma.subativo.count({ where: { id_ativo: dados.id_ativo } });
-    const codigo = `SUB-${dados.id_ativo}-${String(count + 1).padStart(2, '0')}`;
-
-    const novoSubativo = await prisma.subativo.create({
-      data: {
-        ...dados,
-        codigo
-      }
-    });
-    res.status(201).json(novoSubativo);
-  } catch (err) {
-    res.status(400).json({ error: err });
-  }
-});
-
 router.get('/', async (req, res) => {
   try {
     const lista = await prisma.subativo.findMany();
@@ -81,6 +62,12 @@ router.patch('/:id', async (req, res) => {
       res.status(404).json({ error: 'Subativo não encontrado' });
       return;
     } 
+    const partialSchema = subativoSchema.partial();
+    const parsed = partialSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.flatten() });
+      return;
+    }
     const atualizado = await prisma.subativo.update({ where: { id }, data: req.body });
     res.status(200).json(atualizado);
   } catch (err) {
@@ -97,6 +84,5 @@ router.delete('/:id', async (req, res) => {
     res.status(400).json({ error: 'Erro ao deletar subativo' });
   }
 });
-
 
 export default router;

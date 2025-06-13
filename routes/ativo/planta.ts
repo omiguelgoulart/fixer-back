@@ -37,7 +37,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-
 router.post('/', async (req, res) => {
   try {
     const dados = plantaSchema.parse(req.body);
@@ -58,6 +57,12 @@ router.patch('/:id', async (req, res) => {
       res.status(404).json({ error: 'Planta não encontrada' });
       return;
     }
+    const parsed = plantaSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.flatten() });
+      return;
+    }
+
     const atualizada = await prisma.planta.update({ where: { id }, data: req.body });
     res.status(200).json(atualizada);
   } catch (err) {
@@ -74,7 +79,6 @@ router.delete('/:id', async (req, res) => {
     res.status(400).json({ error: 'Erro ao deletar planta' });
   }
 });
-
 
 router.get('/:id', async (req, res) => {
   try {

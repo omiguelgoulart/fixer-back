@@ -13,18 +13,6 @@ const areaSchema = z.object({
 router.post('/', async (req, res) => {
   try {
     const dados = areaSchema.parse(req.body);
-    const count = await prisma.area.count();
-    const codigo = `ARE-${String(count + 1).padStart(3, '0')}`;
-    const novaArea = await prisma.area.create({ data: { ...dados, codigo } });
-    res.status(201).json(novaArea);
-  } catch (err) {
-    res.status(400).json({ error: err });
-  }
-});
-
-router.post('/', async (req, res) => {
-  try {
-    const dados = areaSchema.parse(req.body);
 
     const count = await prisma.area.count();
     const codigo = `ARE-${String(count + 1).padStart(3, '0')}`;
@@ -73,6 +61,13 @@ router.patch('/:id', async (req, res) => {
       res.status(404).json({ error: 'Área não encontrada' });
       return;
     } 
+
+    const partialSchema = areaSchema.partial();
+    const parsed = partialSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.flatten() });
+      return;
+    }
 
     const atualizada = await prisma.area.update({ where: { id }, data: req.body });
     res.status(200).json(atualizada);

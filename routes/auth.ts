@@ -1,10 +1,10 @@
-import { Router, Request, Response } from 'express';
-import { PrismaClient, TipoUsuario } from '@prisma/client'; // Importe TipoUsuario se for usá-lo na validação Zod
-import { z } from 'zod';
-import bcrypt from 'bcryptjs'; 
-import crypto from 'crypto'; 
-import nodemailer from 'nodemailer';
-import { validaSenha } from '../utils/validaSenha'; 
+import { Router, Request, Response } from "express";
+import { PrismaClient, TipoUsuario } from "@prisma/client"; // Importe TipoUsuario se for usá-lo na validação Zod
+import { z } from "zod";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
+import { validaSenha } from "../utils/validaSenha";
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -27,8 +27,13 @@ const esqueciSenhaSchema = z.object({
 router.post("/esqueci-senha", async (req, res) => {
   const validation = esqueciSenhaSchema.safeParse(req.body);
   if (!validation.success) {
-     res.status(400).json({ erro: "Dados inválidos.", detalhes: validation.error.flatten().fieldErrors });
-     return;
+    res
+      .status(400)
+      .json({
+        erro: "Dados inválidos.",
+        detalhes: validation.error.flatten().fieldErrors,
+      });
+    return;
   }
   const { email } = validation.data;
 
@@ -47,9 +52,11 @@ router.post("/esqueci-senha", async (req, res) => {
         },
       });
 
-      const frontendResetUrl = `${process.env.FRONTEND_URL}/redefinir-senha?email=${encodeURIComponent(email)}`;
-      const nomeUsuario = usuario.nome || 'Usuário'; // Pega o nome do usuário
-      const subject = 'Fixer - Código de Recuperação de Senha';
+      const frontendResetUrl = `${
+        process.env.FRONTEND_URL
+      }/redefinir-senha?email=${encodeURIComponent(email)}`;
+      const nomeUsuario = usuario.nome || "Usuário"; // Pega o nome do usuário
+      const subject = "Fixer - Código de Recuperação de Senha";
       const html = `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
           <h2>Recuperação de Senha</h2>
@@ -76,42 +83,59 @@ router.post("/esqueci-senha", async (req, res) => {
           subject,
           html,
         });
-        console.log(`Email de recuperação enviado para ${usuario.email}. Código: ${codigoSeisDigitos}`);
+        console.log(
+          `Email de recuperação enviado para ${usuario.email}. Código: ${codigoSeisDigitos}`
+        );
       } catch (emailError) {
         console.error("Erro ao enviar email de recuperação:", emailError);
         // Não revelar erro de email ao cliente, mas logar no servidor
       }
     } else {
-      console.log(`Tentativa de reset para email não encontrado (ou encontrado, não revelamos): ${email}`);
+      console.log(
+        `Tentativa de reset para email não encontrado (ou encontrado, não revelamos): ${email}`
+      );
     }
-    
+
     // Resposta genérica para evitar enumeração de usuários
-    res.status(200).json({ message: "Se um usuário com este email existir em nossos registros, um código de redefinição de senha foi enviado." });
+    res
+      .status(200)
+      .json({
+        message:
+          "Se um usuário com este email existir em nossos registros, um código de redefinição de senha foi enviado.",
+      });
     return;
   } catch (error) {
     console.error("Erro ao solicitar redefinição de senha:", error);
-    res.status(500).json({ erro: "Erro interno ao processar sua solicitação." });
+    res
+      .status(500)
+      .json({ erro: "Erro interno ao processar sua solicitação." });
     return;
   }
 });
 
-
 // Schema Zod para redefinir a senha
-const recuperarSenhaSchema = z.object({
-  email: z.string().email({ message: "Formato de email inválido." }),
-  codigoRecuperacao: z.string().length(6, { message: "O código de recuperação deve ter 6 dígitos." }), 
-  novaSenha: z.string(), // A validação da política de senha será feita com a função validaSenha
-  confirmacaoNovaSenha: z.string(),
-}).refine(data => data.novaSenha === data.confirmacaoNovaSenha, {
-  message: "As senhas não coincidem.",
-  path: ["confirmacaoNovaSenha"], // Caminho do erro se as senhas não baterem
-});
-
+const recuperarSenhaSchema = z
+  .object({
+    email: z.string().email({ message: "Formato de email inválido." }),
+    codigoRecuperacao: z
+      .string()
+      .length(6, { message: "O código de recuperação deve ter 6 dígitos." }),
+    novaSenha: z.string(), // A validação da política de senha será feita com a função validaSenha
+    confirmacaoNovaSenha: z.string(),
+  }).refine((data) => data.novaSenha === data.confirmacaoNovaSenha, {
+    message: "As senhas não coincidem.",
+    path: ["confirmacaoNovaSenha"], // Caminho do erro se as senhas não baterem
+  });
 
 router.post("/recuperar-senha", async (req: Request, res: Response) => {
   const validation = recuperarSenhaSchema.safeParse(req.body);
   if (!validation.success) {
-    res.status(400).json({ erro: "Dados inválidos.", detalhes: validation.error.flatten().fieldErrors });
+    res
+      .status(400)
+      .json({
+        erro: "Dados inválidos.",
+        detalhes: validation.error.flatten().fieldErrors,
+      });
     return;
   }
 
@@ -120,7 +144,12 @@ router.post("/recuperar-senha", async (req: Request, res: Response) => {
   // Validar a nova senha usando sua função customizada
   const errosNovaSenha = validaSenha(novaSenha); // Sua função de validação de política de senha
   if (errosNovaSenha.length > 0) {
-    res.status(400).json({ erro: "Nova senha inválida.", detalhes: { novaSenha: errosNovaSenha } });
+    res
+      .status(400)
+      .json({
+        erro: "Nova senha inválida.",
+        detalhes: { novaSenha: errosNovaSenha },
+      });
     return;
   }
 
@@ -130,18 +159,30 @@ router.post("/recuperar-senha", async (req: Request, res: Response) => {
     });
 
     // Verifica se o usuário existe, se tem um código e se o código não expirou
-    if (!usuario || !usuario.codRecuperaSenha || !usuario.codRecuperaSenhaExpiracao) {
-      res.status(400).json({ erro: "Solicitação inválida ou código não encontrado. Por favor, tente novamente." });
+    if (
+      !usuario ||
+      !usuario.codRecuperaSenha ||
+      !usuario.codRecuperaSenhaExpiracao
+    ) {
+      res
+        .status(400)
+        .json({
+          erro: "Solicitação inválida ou código não encontrado. Por favor, tente novamente.",
+        });
       return;
     }
 
     if (new Date() > usuario.codRecuperaSenhaExpiracao) {
       // Opcional: Limpar o código expirado do banco para segurança
       await prisma.usuario.update({
-          where: {id: usuario.id},
-          data: {codRecuperaSenha: null, codRecuperaSenhaExpiracao: null}
+        where: { id: usuario.id },
+        data: { codRecuperaSenha: null, codRecuperaSenhaExpiracao: null },
       });
-      res.status(400).json({ erro: "Código de recuperação expirado. Por favor, solicite um novo." });
+      res
+        .status(400)
+        .json({
+          erro: "Código de recuperação expirado. Por favor, solicite um novo.",
+        });
       return;
     }
 
@@ -154,7 +195,7 @@ router.post("/recuperar-senha", async (req: Request, res: Response) => {
     // Se o código é válido e não expirou, hasheia a nova senha e atualiza o usuário
     const hashedNovaSenha = await bcrypt.hash(novaSenha, 12); // Usando 12 rounds como no seu user.ts
     await prisma.usuario.update({
-      where: { email }, 
+      where: { email },
       data: {
         senha: hashedNovaSenha,
         codRecuperaSenha: null, // Limpa o código após o uso
@@ -164,7 +205,6 @@ router.post("/recuperar-senha", async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Senha redefinida com sucesso!" });
     return;
-
   } catch (error) {
     console.error("Erro ao redefinir senha:", error);
     res.status(500).json({ erro: "Erro interno ao redefinir sua senha." });

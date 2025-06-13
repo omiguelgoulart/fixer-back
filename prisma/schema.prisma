@@ -46,22 +46,21 @@ model Sistema {
 }
 
 model Ativo {
-  id                  Int           @id @default(autoincrement())
+  id                  Int            @id @default(autoincrement())
   nome                String
   fabricante          String
   modelo              String
   data_aquisicao      DateTime?
   localizacao_interna String?
   tipo_ativo          TipoAtivo
-  situacao            SituacaoAtivo @default(ATIVO)
+  situacao            SituacaoAtivo  @default(ATIVO)
   criticidade         Criticidade
   id_sistema          Int
-  codigo              String        @unique
-  sistema             Sistema       @relation(fields: [id_sistema], references: [id], onDelete: Cascade)
-  foto                String?        // 👈 relação 1:N
+  codigo              String         @unique
+  sistema             Sistema        @relation(fields: [id_sistema], references: [id], onDelete: Cascade)
+  foto                String? // 👈 relação 1:N
   subativos           Subativo[]
-  manutencoes         Manutencao[]
-  ordensServico      OrdemServico[]
+  ordensServico       OrdemServico[]
 
   @@map("ativos")
 }
@@ -71,6 +70,7 @@ enum TipoAtivo {
   ELETRICO
   ELETRONICO
   HIDRAULICO
+  PNEUMATICO
   OUTRO
 }
 
@@ -87,38 +87,34 @@ enum Criticidade {
   BAIXA
 }
 
-
 model Subativo {
   id       Int    @id @default(autoincrement())
   nome     String
   tipo     String
-  codigo              String        @unique
+  codigo   String @unique
   id_ativo Int
   ativo    Ativo  @relation(fields: [id_ativo], references: [id], onDelete: Cascade)
 
   @@map("subativos")
 }
 
-// Enum para tipos de manutenção
 enum TipoManutencao {
   CORRETIVA
   PREVENTIVA
   PREDITIVA
 }
 
-// Enum para tipos de usuário
 model Usuario {
-  id                          Int             @id @default(autoincrement())
-  nome                        String
-  email                       String          @unique
-  senha                       String
-  ativo                       Boolean         @default(true)
-  tipo                        TipoUsuario
-  ordensResponsavel           OrdemServico[]  @relation("ResponsavelNaOrdemServico")
-  ordensServico               OrdemServico[]  @relation("UsuarioNaOrdemServico")
-  manutencoesUsuario          Manutencao[]    @relation("UsuarioNaManutencaoDireta")
-  codRecuperaSenha            String?         @unique
-  codRecuperaSenhaExpiracao   DateTime?
+  id                        Int            @id @default(autoincrement())
+  nome                      String
+  email                     String         @unique
+  senha                     String
+  ativo                     Boolean        @default(true)
+  tipo                      TipoUsuario
+  ordensResponsavel         OrdemServico[] @relation("ResponsavelNaOrdemServico")
+  ordensServico             OrdemServico[] @relation("UsuarioNaOrdemServico")
+  codRecuperaSenha          String?        @unique
+  codRecuperaSenhaExpiracao DateTime?
 
   @@map("usuarios")
 }
@@ -129,10 +125,9 @@ enum TipoUsuario {
   TECNICO
 }
 
-
 model OrdemServico {
   id                  Int             @id @default(autoincrement())
-  codigo              String?          @unique
+  codigo              String?         @unique
   titulo              String
   status              StatusOrdem
   prioridade          PrioridadeOrdem
@@ -140,53 +135,36 @@ model OrdemServico {
   responsavel         Usuario         @relation("ResponsavelNaOrdemServico", fields: [responsavelId], references: [id])
   ativoId             Int
   ativo               Ativo           @relation(fields: [ativoId], references: [id])
-  dataInicioPlanejada DateTime        
+  dataInicioPlanejada DateTime
   dataVencimento      DateTime
   tipoManutencao      TipoManutencao
   usuarioId           Int
   usuario             Usuario         @relation("UsuarioNaOrdemServico", fields: [usuarioId], references: [id])
   tarefas             Tarefa[]
   insumos             Insumo[]
-  manutencao          Manutencao?
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
 
   @@map("ordens_servico")
 }
 
-model Manutencao {
-  id              Int            @id @default(autoincrement())
-  tipo            TipoManutencao
-  data_inicio     DateTime
-  data_fim        DateTime
-  descricao       String
-  id_ativo        Int
-  ativo           Ativo          @relation(fields: [id_ativo], references: [id], onDelete: Cascade)
-  ordemServicoId  Int            @unique
-  ordemServico    OrdemServico   @relation(fields: [ordemServicoId], references: [id])
-  usuarioId       Int
-  usuario         Usuario        @relation("UsuarioNaManutencaoDireta", fields: [usuarioId], references: [id])
-
-  @@map("manutencoes")
-}
-
 model Tarefa {
-  id              Int           @id @default(autoincrement())
-  descricao       String
-  concluida       Boolean       @default(false)
-  ordemServicoId  Int
-  ordemServico    OrdemServico  @relation(fields: [ordemServicoId], references: [id])
+  id             Int          @id @default(autoincrement())
+  descricao      String
+  concluida      Boolean      @default(false)
+  ordemServicoId Int
+  ordemServico   OrdemServico @relation(fields: [ordemServicoId], references: [id])
 
   @@map("tarefas")
 }
 
 model Insumo {
-  id              Int           @id @default(autoincrement())
-  nome            String?        @unique
-  codigo          String
-  quantidade      Int
-  ordemServicoId  Int
-  ordemServico    OrdemServico  @relation(fields: [ordemServicoId], references: [id])
+  id             Int          @id @default(autoincrement())
+  nome           String?      @unique
+  codigo         String
+  quantidade     Int
+  ordemServicoId Int
+  ordemServico   OrdemServico @relation(fields: [ordemServicoId], references: [id])
 
   @@map("insumos")
 }
@@ -202,5 +180,3 @@ enum PrioridadeOrdem {
   MEDIA
   BAIXA
 }
-
-

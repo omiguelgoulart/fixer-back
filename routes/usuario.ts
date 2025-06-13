@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
-import bcrypt from 'bcryptjs'
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { validaSenha } from "../utils/validaSenha";
 
@@ -15,7 +15,6 @@ const usuarioSchema = z.object({
   tipo: z.enum(["GESTOR", "GERENTE", "TECNICO"]),
 });
 
-// GET todos os usuários
 router.get("/", async (req, res) => {
   try {
     const usuarios = await prisma.usuario.findMany();
@@ -26,7 +25,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST novo usuário
 router.post("/", async (req, res) => {
   const valida = usuarioSchema.safeParse(req.body);
 
