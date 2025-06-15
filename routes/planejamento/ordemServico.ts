@@ -48,6 +48,7 @@ router.get("/:id/os", async (req, res) => {
         usuario: true,
         tarefas: true,
         insumos: true,
+        observacoes: true,
       },
     });
     if (!ordemServico) {
