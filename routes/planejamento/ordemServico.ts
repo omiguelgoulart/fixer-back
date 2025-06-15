@@ -17,7 +17,6 @@ const ordemServicoSchema = z.object({
   tipoManutencao: z.enum(["CORRETIVA", "PREVENTIVA", "PREDITIVA"]),
   dataVencimento: z.coerce.date(),
   dataInicioPlanejada: z.coerce.date(),
-  observacoes: z.string().optional(),
 });
 
 router.get("/", async (req, res) => {
