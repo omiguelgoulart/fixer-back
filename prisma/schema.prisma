@@ -142,6 +142,7 @@ model OrdemServico {
   usuario             Usuario         @relation("UsuarioNaOrdemServico", fields: [usuarioId], references: [id])
   tarefas             Tarefa[]
   insumos             Insumo[]
+  observacoes         String?
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
 
