@@ -13,6 +13,7 @@ import ordemServicoRouter from "./routes/planejamento/ordemServico";
 import IsumoRouter from "./routes/planejamento/insumo";
 import authRouter from "./routes/auth";
 import dashboardRouter from "./routes/dashboard";
+import observacaoRouter from "./routes/planejamento/observacao";
 
 const app = express();
 const port = 3001;
@@ -33,6 +34,7 @@ app.use("/dashboard", dashboardRouter);
 app.use("/tarefa", tarefaRouter);
 app.use("/ordemServico", ordemServicoRouter);
 app.use("/insumo", IsumoRouter);
+app.use("/observacao", observacaoRouter);
 
 // Rota raiz
 app.get("/", (req, res) => {
