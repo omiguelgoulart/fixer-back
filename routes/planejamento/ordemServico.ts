@@ -26,6 +26,8 @@ router.get("/", async (req, res) => {
         ativo: true,
         responsavel: true,
         usuario: true,
+        tarefas: true,
+        insumos: true,
       },
     });
     res.status(200).json(ordensServico);
