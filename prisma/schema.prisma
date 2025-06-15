@@ -111,6 +111,7 @@ model Usuario {
   senha                     String
   ativo                     Boolean        @default(true)
   tipo                      TipoUsuario
+  observacoes         Observacao[]
   ordensResponsavel         OrdemServico[] @relation("ResponsavelNaOrdemServico")
   ordensServico             OrdemServico[] @relation("UsuarioNaOrdemServico")
   codRecuperaSenha          String?        @unique
@@ -153,6 +154,8 @@ model Observacao {
   id             Int          @id @default(autoincrement())
   conteudo       String
   ordemServicoId Int
+  responsavelId Int
+  responsavel   Usuario     @relation(fields: [responsavelId], references: [id])
   ordemServico   OrdemServico @relation(fields: [ordemServicoId], references: [id])
 
   @@map("observacoes")
