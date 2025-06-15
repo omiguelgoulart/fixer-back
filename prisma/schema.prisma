@@ -160,7 +160,7 @@ model Tarefa {
 
 model Insumo {
   id             Int          @id @default(autoincrement())
-  nome           String?      @unique
+  nome           String?      
   codigo         String
   quantidade     Int
   ordemServicoId Int
