@@ -6,11 +6,11 @@ const router = Router();
 const prisma = new PrismaClient();
 
 const observacaoSchema = z.object({
-    conteudo: z.string().min(1, "Conteúdo é obrigatório"),
     ordemServicoId: z
-        .number({ required_error: "ID da ordem de serviço é obrigatório" })
-        .int(),
-    });
+        .number({ required_error: "ID da ordem de serviço é obrigatório" }).int(),
+    texto: z.string().min(1, "Texto é obrigatório"),
+    resposavel: z.number({ required_error: "Responsável é obrigatório" }).int(),
+});
 
 router.get("/", async (req, res) => {
     try {
@@ -54,12 +54,13 @@ router.post("/", async (req, res) => {
             return;
         }
 
-        const { conteudo, ordemServicoId } = parsed.data;
+        const { ordemServicoId, texto, resposavel } = parsed.data;
 
         const observacao = await prisma.observacao.create({
             data: {
-                conteudo,
                 ordemServicoId,
+                texto,
+                resposavel,
             },
             include: {
                 ordemServico: true,
@@ -82,13 +83,14 @@ router.patch("/:id", async (req, res) => {
             return;
         }
 
-        const { conteudo, ordemServicoId } = parsed.data;
+        const { ordemServicoId, texto, resposavel } = parsed.data;
 
         const observacao = await prisma.observacao.update({
             where: { id },
             data: {
-                conteudo,
                 ordemServicoId,
+                texto,
+                resposavel,
             },
             include: {
                 ordemServico: true,
