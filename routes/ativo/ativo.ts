@@ -173,4 +173,43 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// GET /ativos/:id/historico
+router.get("/:id/historico", async (req, res) => {
+  const id = Number(req.params.id);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: "ID inválido" });
+    return;
+  }
+
+  try {
+    const ativo = await prisma.ativo.findUnique({
+      where: { id },
+      include: {
+        ordensServico: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            tarefas: true,
+            insumos: true,
+            responsavel: { select: { id: true, nome: true } },
+            usuario: { select: { id: true, nome: true } },
+          },
+        },
+      },
+    });
+
+    if (!ativo) {
+      res.status(404).json({ error: "Ativo não encontrado" });
+      return;
+    }
+
+     res.json(ativo);
+     return;
+  } catch (error) {
+    console.error("Erro ao buscar histórico do ativo:", error);
+     res.status(500).json({ error: "Erro interno no servidor" });
+     return;
+  }
+});
+
 export default router;

@@ -159,7 +159,7 @@ model Observacao {
   resposavel     Int
   responsavelUsuario Usuario      @relation(fields: [resposavel], references: [id])
 
-@@map("observacoes")
+  @@map("observacoes")
 }
 
 
