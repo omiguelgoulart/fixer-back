@@ -32,10 +32,11 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const valida = usuarioSchema.safeParse(req.body);
 
-  if (!valida.success) {
-    res.status(400).json({ erro: valida.error.format() });
-    return;
-  }
+if (!valida.success) {
+  console.log("Erro de validação:", valida.error.format()) // 👈 Adicione isso
+  res.status(400).json({ erro: valida.error.format() })
+  return
+}
 
   let errosSenha: string[] = [];
   if (typeof valida.data.senha === "string") {
@@ -50,12 +51,16 @@ router.post("/", async (req, res) => {
     const salt = bcrypt.genSaltSync(12);
     const hash = bcrypt.hashSync(valida.data.senha, salt);
 
-    const usuario = await prisma.usuario.create({
-      data: {
-        ...valida.data,
-        senha: hash,
-      },
-    });
+const usuario = await prisma.usuario.create({
+  data: {
+    ...valida.data,
+    senha: hash,
+    dataContratacao: valida.data.dataContratacao
+      ? new Date(valida.data.dataContratacao)
+      : undefined,
+  },
+})
+
 
     res.status(201).json(usuario);
   } catch (error) {
