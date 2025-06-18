@@ -61,6 +61,57 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.patch("/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ erro: "ID inválido" });
+    return;
+  }
+  const valida = usuarioSchema.safeParse(req.body);
+  if (!valida.success) {
+    res.status(400).json({ erro: valida.error.format() });
+    return;
+  }
+  const errosSenha = validaSenha(valida.data.senha);
+  if (errosSenha.length > 0) {
+    res.status(400).json({ erro: errosSenha.join("; ") });
+    return;
+  }
+  try {
+    const usuarioExistente = await prisma.usuario.findUnique({
+      where: { id },
+    });
+
+    if (!usuarioExistente) {
+      res.status(404).json({ erro: "Usuário não encontrado" });
+      return;
+    }
+
+    const salt = bcrypt.genSaltSync(12);
+    const hash = bcrypt.hashSync(valida.data.senha, salt);
+
+    const partialSchema = usuarioSchema.partial();
+    const parsed = partialSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ erro: parsed.error.format() });
+      return;
+    }
+    
+    const usuarioAtualizado = await prisma.usuario.update({
+      where: { id },
+      data: {
+        ...valida.data,
+        senha: hash,
+      },
+    });
+
+    res.status(200).json(usuarioAtualizado);
+  } catch (error) {
+    console.error("Erro ao atualizar usuário:", error);
+    res.status(500).json({ erro: "Erro ao atualizar usuário" });
+  }
+});
+
 // GET usuário por cargo, sendo Tecnico
 router.get("/tecnico", async (req, res) => {
   try {
