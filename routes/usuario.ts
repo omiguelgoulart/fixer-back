@@ -37,10 +37,13 @@ router.post("/", async (req, res) => {
     return;
   }
 
-  const errosSenha = validaSenha(valida.data.senha);
-  if (errosSenha.length > 0) {
-    res.status(400).json({ erro: errosSenha.join("; ") });
-    return;
+  let errosSenha: string[] = [];
+  if (typeof valida.data.senha === "string") {
+    errosSenha = validaSenha(valida.data.senha);
+    if (errosSenha.length > 0) {
+      res.status(400).json({ erro: errosSenha.join("; ") });
+      return;
+    }
   }
 
   try {
@@ -67,42 +70,43 @@ router.patch("/:id", async (req, res) => {
     res.status(400).json({ erro: "ID inválido" });
     return;
   }
-  const valida = usuarioSchema.safeParse(req.body);
+
+  // Permite atualização parcial (todos os campos opcionais)
+  const partialSchema = usuarioSchema.partial();
+  const valida = partialSchema.safeParse(req.body);
+
   if (!valida.success) {
     res.status(400).json({ erro: valida.error.format() });
     return;
   }
-  const errosSenha = validaSenha(valida.data.senha);
-  if (errosSenha.length > 0) {
-    res.status(400).json({ erro: errosSenha.join("; ") });
-    return;
+
+  const dadosAtualizados = { ...valida.data };
+
+  // Se a senha foi enviada, validar e criptografar
+  if (dadosAtualizados.senha) {
+    const errosSenha = validaSenha(dadosAtualizados.senha);
+    if (errosSenha.length > 0) {
+      res.status(400).json({ erro: errosSenha.join("; ") });
+      return;
+    }
+
+    const salt = bcrypt.genSaltSync(12);
+    dadosAtualizados.senha = bcrypt.hashSync(dadosAtualizados.senha, salt);
+  } else {
+    delete dadosAtualizados.senha; // Remove caso esteja undefined
   }
+
   try {
-    const usuarioExistente = await prisma.usuario.findUnique({
-      where: { id },
-    });
+    const usuarioExistente = await prisma.usuario.findUnique({ where: { id } });
 
     if (!usuarioExistente) {
       res.status(404).json({ erro: "Usuário não encontrado" });
       return;
     }
 
-    const salt = bcrypt.genSaltSync(12);
-    const hash = bcrypt.hashSync(valida.data.senha, salt);
-
-    const partialSchema = usuarioSchema.partial();
-    const parsed = partialSchema.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ erro: parsed.error.format() });
-      return;
-    }
-    
     const usuarioAtualizado = await prisma.usuario.update({
       where: { id },
-      data: {
-        ...valida.data,
-        senha: hash,
-      },
+      data: dadosAtualizados,
     });
 
     res.status(200).json(usuarioAtualizado);

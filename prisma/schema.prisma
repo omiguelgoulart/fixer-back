@@ -108,7 +108,7 @@ model Usuario {
   id                        Int            @id @default(autoincrement())
   nome                      String
   email                     String         @unique
-  senha                     String
+  senha                     String?
   ativo                     Boolean        @default(true)
   tipo                      TipoUsuario
   telefone                  String?
