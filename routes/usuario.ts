@@ -13,11 +13,15 @@ const usuarioSchema = z.object({
   senha: z.string(),
   ativo: z.boolean().default(true),
   tipo: z.enum(["GESTOR", "GERENTE", "TECNICO"]),
+  telefone: z.string().optional(),
+  dataContratacao: z.string().optional(),
 });
 
 router.get("/", async (req, res) => {
   try {
-    const usuarios = await prisma.usuario.findMany();
+    const usuarios = await prisma.usuario.findMany({
+      orderBy: { nome: "asc" }
+    });
     res.status(200).json(usuarios);
   } catch (error) {
     console.error("Erro ao listar usuários:", error);
@@ -62,6 +66,7 @@ router.get("/tecnico", async (req, res) => {
   try {
     const usuarios = await prisma.usuario.findMany({
       where: { tipo: "TECNICO" },
+      orderBy: { nome: "asc" },
     });
     res.status(200).json(usuarios);
   } catch (error) {
@@ -69,6 +74,7 @@ router.get("/tecnico", async (req, res) => {
     res.status(500).json({ erro: "Erro interno ao buscar usuários técnicos" });
   }
 });
+
 // GET usuário por ID e cargo, sendo tecnico
 router.get("/tecnico/:id/tec", async (req, res) => {
   const id = parseInt(req.params.id, 10);

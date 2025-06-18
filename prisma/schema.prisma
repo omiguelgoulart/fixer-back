@@ -111,7 +111,9 @@ model Usuario {
   senha                     String
   ativo                     Boolean        @default(true)
   tipo                      TipoUsuario
-  observacoes         Observacao[]
+  telefone                  String?
+  dataContratacao           DateTime?
+  observacoes               Observacao[]
   ordensResponsavel         OrdemServico[] @relation("ResponsavelNaOrdemServico")
   ordensServico             OrdemServico[] @relation("UsuarioNaOrdemServico")
   codRecuperaSenha          String?        @unique
@@ -151,17 +153,16 @@ model OrdemServico {
 }
 
 model Observacao {
-  id             Int             @id @default(autoincrement())
-  ordemServicoId Int
-  ordemServico   OrdemServico    @relation(fields: [ordemServicoId], references: [id])
-  texto          String
-  criadoEm       DateTime        @default(now())
-  resposavel     Int
+  id                 Int          @id @default(autoincrement())
+  ordemServicoId     Int
+  ordemServico       OrdemServico @relation(fields: [ordemServicoId], references: [id])
+  texto              String
+  criadoEm           DateTime     @default(now())
+  resposavel         Int
   responsavelUsuario Usuario      @relation(fields: [resposavel], references: [id])
 
   @@map("observacoes")
 }
-
 
 model Tarefa {
   id             Int          @id @default(autoincrement())
@@ -175,7 +176,7 @@ model Tarefa {
 
 model Insumo {
   id             Int          @id @default(autoincrement())
-  nome           String?      
+  nome           String?
   codigo         String
   quantidade     Int
   ordemServicoId Int
