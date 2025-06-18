@@ -121,6 +121,28 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+router.delete("/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ erro: "ID inválido" });
+    return;
+  }
+  try {
+    const usuarioExistente = await prisma.usuario.findUnique({ where: { id } });
+
+    if (!usuarioExistente) {
+      res.status(404).json({ erro: "Usuário não encontrado" });
+      return;
+    }
+
+    await prisma.usuario.delete({ where: { id } });
+    res.status(204).send();
+  } catch (error) {
+    console.error("Erro ao excluir usuário:", error);
+    res.status(500).json({ erro: "Erro ao excluir usuário" });
+  }
+});
+
 // GET usuário por cargo, sendo Tecnico
 router.get("/tecnico", async (req, res) => {
   try {
