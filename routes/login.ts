@@ -35,18 +35,22 @@ router.post("/", async (req, res) => {
       // se confere, gera e retorna o token
       const token = jwt.sign({
         usuarioLogadoId: usuario.id,
-        usuarioLogadoNome: usuario.nome
+        usuarioLogadoNome: usuario.nome,
+        usuarioTipo: usuario.tipo,
       },
         process.env.JWT_KEY as string,
         { expiresIn: "5h" }
       )
 
-      res.status(200).json({
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        token
-      })
+  res.status(200).json({
+    usuario: {
+      id: usuario.id,
+      nome: usuario.nome,
+      email: usuario.email,
+      tipo: usuario.tipo, // 👈 envia para o frontend também
+    },
+    token,
+  });
     } else {
       res.status(400).json({ erro: mensaPadrao })
     }
