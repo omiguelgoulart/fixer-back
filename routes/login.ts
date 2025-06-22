@@ -31,7 +31,7 @@ router.post("/", async (req, res) => {
     }
 
     // se o e-mail existe, faz-se a comparação dos hashs
-    if (bcrypt.compareSync(senha, usuario.senha)) {
+    if (usuario.senha && bcrypt.compareSync(senha, usuario.senha)) {
       // se confere, gera e retorna o token
       const token = jwt.sign({
         usuarioLogadoId: usuario.id,
