@@ -166,19 +166,28 @@ router.get("/tecnico/:id/tec", async (req, res) => {
   }
 
   try {
-    const usuario = await prisma.usuario.findUnique({
+    const tecnico = await prisma.usuario.findUnique({
       where: { id, tipo: "TECNICO" },
     });
 
-    if (!usuario) {
+    if (!tecnico) {
       res.status(404).json({ erro: "Usuário técnico não encontrado" });
       return;
     }
 
-    res.status(200).json(usuario);
+    const ordens = await prisma.ordemServico.findMany({
+      where: {
+        responsavelId: id,
+      },
+      include: {
+        ativo: true,
+      },
+    });
+
+    res.status(200).json(ordens);
   } catch (error) {
-    console.error("Erro ao buscar usuário técnico:", error);
-    res.status(500).json({ erro: "Erro interno ao buscar usuário técnico" });
+    console.error("Erro ao buscar ordens do técnico:", error);
+    res.status(500).json({ erro: "Erro interno ao buscar ordens do técnico" });
   }
 });
 
