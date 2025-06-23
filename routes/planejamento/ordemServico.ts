@@ -29,6 +29,7 @@ router.get("/", async (req, res) => {
         tarefas: true,
         insumos: true,
       },
+      orderBy: { dataVencimento: "asc" },
     });
     res.status(200).json(ordensServico);
   } catch (err) {
