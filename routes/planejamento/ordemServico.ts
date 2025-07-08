@@ -41,6 +41,7 @@ router.get("/", async (req, res) => {
 router.get("/:id/os", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+
     const ordemServico = await prisma.ordemServico.findUnique({
       where: { id },
       include: {
@@ -49,13 +50,19 @@ router.get("/:id/os", async (req, res) => {
         usuario: true,
         tarefas: true,
         insumos: true,
-        observacoes: true,
+        observacoes: {
+          include: {
+            resposavel: true, // Aqui incluímos o responsável da observação
+          },
+        },
       },
     });
+
     if (!ordemServico) {
       res.status(404).json({ error: "Ordem de serviço não encontrada." });
       return;
     }
+
     res.status(200).json(ordemServico);
   } catch (err) {
     console.error("Erro ao buscar ordem de serviço:", err);

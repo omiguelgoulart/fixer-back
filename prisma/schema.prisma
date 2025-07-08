@@ -153,16 +153,19 @@ model OrdemServico {
 }
 
 model Observacao {
-  id                 Int          @id @default(autoincrement())
-  ordemServicoId     Int
-  ordemServico       OrdemServico @relation(fields: [ordemServicoId], references: [id])
-  texto              String
-  criadoEm           DateTime     @default(now())
-  resposavel         Int
-  responsavelUsuario Usuario      @relation(fields: [resposavel], references: [id])
+  id              Int             @id @default(autoincrement())
+  ordemServicoId  Int
+  texto           String
+  criadoEm        DateTime        @default(now())
 
-  @@map("observacoes")
+  resposavelId    Int?
+  resposavel      Usuario?         @relation(fields: [resposavelId], references: [id])
+
+  ordemServico    OrdemServico    @relation(fields: [ordemServicoId], references: [id])
+
+@@map("observacoes")
 }
+
 
 model Tarefa {
   id             Int          @id @default(autoincrement())
